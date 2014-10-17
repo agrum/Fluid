@@ -62,6 +62,22 @@ public class ShaderProgram {
 		GL20.glUseProgram(0);
 	}
 	
+	public void setAttributeBuffer(
+			String p_name,
+			int p_type,
+			int p_offset,
+			int p_tupleSize,
+			int p_stride)
+	{
+		GL20.glVertexAttribPointer(
+				GL20.glGetAttribLocation(m_id, p_name),
+				p_tupleSize,
+				p_type,
+				true,
+				p_stride,
+				p_offset);
+	}
+	
 	private int loadShader(String filename, int type) {
 		StringBuilder shaderSource = new StringBuilder();
 		int shaderID = 0;

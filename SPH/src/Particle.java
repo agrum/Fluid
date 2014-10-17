@@ -15,7 +15,9 @@ public class Particle {
 	protected static final int RADIUS = 9*4;
 	protected static final int NEXT = 10*4;
 	
-	ByteBuffer m_information = ByteBuffer.allocate(16 * 4);
+	protected static final int MAX = 16*4;
+	
+	ByteBuffer m_information = ByteBuffer.allocate(MAX);
 	
 	Particle ()
 	{
@@ -26,9 +28,14 @@ public class Particle {
 		m_information.putInt(NEXT, 0xffffffff);
 	}
 	
-	ByteBuffer data()
+	ByteBuffer buffer()
 	{
 		return m_information;
+	}
+	
+	public static int GLSLSize()
+	{
+		return 16 * (1 + (MAX - 1)/16);
 	}
 	
 	void setPosition(Vector3f p_position)
