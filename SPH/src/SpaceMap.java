@@ -23,6 +23,13 @@ public class SpaceMap {
 	
 	public void swap()
 	{
+		m_front.clear();
 		
+		Cube temp = m_back;
+		m_back = m_front;
+		m_front = temp;
+		
+		m_front.addParticles(m_toAddParticleVector);
+		m_toAddParticleVector.clear();
 	}
 }

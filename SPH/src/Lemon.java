@@ -1,8 +1,6 @@
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.omg.CORBA.UserException;
-
 
 public class Lemon {
 	private Lemon m_parent = null;
@@ -34,7 +32,10 @@ public class Lemon {
 			String p_seed) throws Exception
 	{
 		if(!m_seedMap.containsKey(p_seed))
-			throw new Rock("Lemon:getSeed() => Map doesn't contains this seed");
+			if(m_parent == null)
+				m_parent.getSeed(p_seed);
+			else
+				throw new Rock("Lemon:getSeed() => Map doesn't contains this seed");
 		
 		return m_seedMap.get(p_seed);
 	}
