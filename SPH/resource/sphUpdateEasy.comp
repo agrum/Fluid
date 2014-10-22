@@ -1,0 +1,142 @@
+﻿#version 430
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+struct Particle
+{
+	vec4 position;
+	vec4 velocity;
+	float mass;
+	float antiMass;
+	float density;
+	int rez;
+	uint next;
+};
+
+uniform int uExploreLimit;
+uniform float uDeltaT;
+
+coherent layout (binding = 0, std430) buffer iPCSStruct
+{
+	layout(offset = 0) uint headerMat_Size_1[32*32*32];
+	layout(offset = 131072) uint headerMat_Size_2[16*16*16];
+	layout(offset = 147456) uint offChart; //131072
+	layout(offset = 147460) uint nbParticles; //131076
+	layout(offset = 147472) Particle particle[]; //131088
+} iPCS;
+
+coherent layout (binding = 1, std430) buffer oPCSStruct
+{
+	layout(offset = 0) uint headerMat_Size_1[32*32*32];
+	layout(offset = 131072) uint headerMat_Size_2[16*16*16];
+	layout(offset = 147456) uint offChart;
+	layout(offset = 147460) uint nbParticles;
+	layout(offset = 147472) Particle particle[];
+} oPCS;
+
+void main() 
+{
+	//Read input particle
+	Particle particle = iPCS.particle[gl_WorkGroupID.x];
+	uint iHeaderMatrix[5][];
+	iHeaderMatrix[0] = iPCS.headerMat_Size_1;
+	iHeaderMatrix[1] = iPCS.headerMat_Size_2;
+	uint oHeaderMatrix[5][];
+	oHeaderMatrix[0] = oPCS.headerMat_Size_1;
+	oHeaderMatrix[1] = oPCS.headerMat_Size_2;
+	
+	//Compute density
+	vec3 P = vec3(0.0f,0.0f,0.0f);
+	vec3 V = vec3(0.0f,0.0f,0.0f);
+	vec3 G = vec3(0.0f,0.0f,0.0f);
+	float ATMP = 0.9;
+	float PI = 3.14159265358979323846264;
+	float coefD = 315.0/(64.0*PI);
+	float coefT = (2.0*3.0*27.0)/(4.0*4.0*107.0);
+	float coefP = -1.2575;
+	float coefV = 1.2575;
+	float newDensity = 1.0;
+
+	float m_radius = float(pow(2, particle.rez))/2.0;
+	float m_pressure = ATMP + (particle.density - 1.0)*1.2;
+	float m_viscosity = 0.4*100.0*0.2;
+	float m_friction = 0.995;
+	
+	ivec3 particleVoxel = ivec3(particle.position.xyz);
+	
+	//Density
+	for(int rez = 0; rez <= 0; rez++){
+		ivec3 particleVoxel = ivec3(particle.position.xyz) / (int(rez)+1);
+		ivec3 topClamp = ivec3(31, 31, 31) / (int(rez)+1);
+		float radius = float(pow(2, rez))/2.0;
+		float sqDistTopClamp = pow(radius + m_radius, 2.0);
+		float reactDist = 1.5*float(radius + m_radius);
+
+		for(int i = -1; i < 2; i++){ 
+			for(int j =- 1; j < 2; j++){
+				for(int k = -1; k < 2; k++){
+					ivec3 offset = ivec3(i, j, k);
+					ivec3 currentVoxel = particleVoxel + offset;
+					if(clamp(currentVoxel, ivec3(0, 0, 0), topClamp) == currentVoxel){
+						uint voxelIndex = currentVoxel.x + currentVoxel.y * 32 + currentVoxel.z*32*32;
+						uint particleIndex = iHeaderMatrix[rez][voxelIndex];
+						int explored = 0;
+						while(particleIndex != 0xffffffff /*&& explored++ < uExploreLimit*/)
+						{
+							Particle surrParticle = iPCS.particle[particleIndex];
+							vec3 diff = (particle.position.xyz - surrParticle.position.xyz.xyz);
+							float sqDist = dot(diff, diff);
+							if(sqDist > 0.0001 && sqDist < 1.0){
+								float tmpCoefD = pow(1.0 - sqDist, 3);
+								newDensity += particle.mass*coefD*tmpCoefD;
+							}
+						
+							if(sqDist > 0.01 && sqDist < reactDist)
+							{
+								float dist = sqrt(sqDist);
+								float tmpCoefV = (reactDist - dist);
+								float tmpCoefP = pow(reactDist - dist, 3.0)/(dist + 0.1);
+							
+								float p_density = surrParticle.density;
+								float p_pressure = ATMP + (p_density - 1.0)*1.2;
+
+								P += (surrParticle.position.xyz - particle.position.xyz)*surrParticle.mass*tmpCoefP*(m_pressure + p_pressure)/p_density;
+								V += (surrParticle.velocity.xyz - particle.velocity.xyz)*surrParticle.mass*tmpCoefV/p_density;
+							}
+
+							particleIndex = surrParticle.next;
+						}
+					}
+				}
+			}	
+		}
+	}
+
+	P *= coefP;
+	V *= coefV*m_viscosity;
+	G = vec3(vec3(16,16,16) - particle.position.xyz)/75.0;
+	//vec3 centralizedPosition = particle.position.xyz - vec3(16,16,16);
+	//G = vec3(normalize(centralizedPosition)*10.0 - centralizedPosition)/35.0;
+	
+	particle.velocity.xyz = particle.velocity.xyz*m_friction + (P + V + G)*0.01;
+	particle.position.xyz += particle.velocity.xyz * uDeltaT / 30.0;
+
+	//Update particle
+	particle.position.xyz.xyz = particle.position.xyz;
+	particle.velocity.xyz.xyz = particle.velocity.xyz;
+	particle.density = newDensity;
+
+	//Write output particle
+	uint oID = atomicAdd(oPCS.nbParticles, 1);
+	uint headerMatIndex;
+	uint next;
+	if(clamp(ivec3(particle.position.xyz), ivec3(0, 0, 0), ivec3(31, 31, 31)) == ivec3(particle.position.xyz))
+	{
+		headerMatIndex = uint(floor(particle.position.xyz.x)) + (uint(floor(particle.position.xyz.y)) * 32) + (uint(floor(particle.position.xyz.z)) * 32*32);
+		next = atomicExchange(oPCS.headerMat_Size_1[headerMatIndex], oID);
+	}
+	else
+		next = atomicExchange(oPCS.offChart, oID);
+	particle.next = next;
+	oPCS.particle[oID] = particle;
+}

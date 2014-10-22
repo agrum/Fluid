@@ -1,0 +1,39 @@
+﻿#version 430
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+struct Particle
+{
+	vec3 position;
+	vec3 velocity;
+	float mass;
+	float density;
+	uint next;
+};
+
+coherent layout (binding = 0)  buffer iPCSStruct
+{
+	uint nbParticles;
+	uint headerMat[32*32*32];
+	uint offChart;
+	Particle particle[];
+} iPCS[27];
+
+coherent layout (binding = 27) buffer oPCSStruct
+{
+	uint nbParticles;
+	uint headerMat[32*32*32];
+	uint offChart;
+	Particle particle[];
+} oPCS[27];
+
+void main() 
+{
+	uint nb = oPCS[13].nbParticles;
+	Particle source = iPCS[13].particle[gl_WorkGroupID.x];
+	uint oID = atomicAdd(oPCS[13].nbParticles, 1);
+	uint headerMatIndex = uint(source.position.x) + (uint(source.position.y) * 32) + (uint(source.position.z) * 32*32);
+	uint next = atomicExchange(oPCS[13].headerMat[headerMatIndex], oID);
+	source.next = next;
+	oPCS[13].particle[oID] = source;
+}

@@ -1,3 +1,6 @@
+import java.nio.FloatBuffer;
+
+import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.*;
  
 
@@ -28,20 +31,21 @@ public class Eye {
 		eye.lookLeft(90.0f);
 	}*/
 
-	public Eye() {
+	public Eye() {		
 		m_projectionType = PROJECTION_PERSP;
 		m_aspectRatio = 1.6f;
 		m_FOVHorizontal = 120.0f;
 		m_nearPlane = 0.1f;
 		m_farPlane = 100.0f;
 		m_projMatrix = new Matrix4f();
-		setProjection();
 		
 		m_position = new Vector3f(0,0,0);
 		m_direction = new Vector3f(0,0,1);
 		m_horizontal = new Vector3f(1,0,0);
 		m_vertical = new Vector3f(0,1,0);
 		m_viewMatrix = new Matrix4f();
+		
+		setProjection();
 		setView();
 	}
 	
@@ -154,7 +158,11 @@ public class Eye {
 	}
 	public void lookUp(float p_angle)
 	{
-		Quaternion qVector = new Quaternion(m_horizontal.x, m_horizontal.y, m_horizontal.z, p_angle);
+		float radHalfAngle = p_angle / 2.0f; 
+		float sinVal = (float) Math.sin(radHalfAngle);
+		float cosVal = (float) Math.cos(radHalfAngle);
+		
+		Quaternion qVector = new Quaternion(m_horizontal.x * sinVal, m_horizontal.y * sinVal, m_horizontal.z * sinVal, cosVal);
 		Quaternion qVertical = new Quaternion(m_vertical.x, m_vertical.y, m_vertical.z, 0);
 		Quaternion qTemp = new Quaternion();
 
@@ -171,7 +179,11 @@ public class Eye {
 	}
 	public void lookLeft(float p_angle)
 	{
-		Quaternion qVector = new Quaternion(m_vertical.x, m_vertical.y, m_vertical.z, p_angle);
+		float radHalfAngle = p_angle / 2.0f; 
+		float sinVal = (float) Math.sin(radHalfAngle);
+		float cosVal = (float) Math.cos(radHalfAngle);
+		
+		Quaternion qVector = new Quaternion(m_vertical.x * sinVal, m_vertical.y * sinVal, m_vertical.z * sinVal, cosVal);
 		Quaternion qDirection = new Quaternion(m_direction.x, m_direction.y, m_direction.z, 0);
 		Quaternion qTemp = new Quaternion();
 
@@ -188,7 +200,11 @@ public class Eye {
 	}
 	public void lookSideway(float p_angle)
 	{
-		Quaternion qVector = new Quaternion(m_direction.x, m_direction.y, m_direction.z, p_angle);
+		float radHalfAngle = p_angle / 2.0f; 
+		float sinVal = (float) Math.sin(radHalfAngle);
+		float cosVal = (float) Math.cos(radHalfAngle);
+		
+		Quaternion qVector = new Quaternion(m_direction.x * sinVal, m_direction.y * sinVal, m_direction.z * sinVal, cosVal);
 		Quaternion qHorizontal = new Quaternion(m_horizontal.x, m_horizontal.y, m_horizontal.z, 0);
 		Quaternion qTemp = new Quaternion();
 

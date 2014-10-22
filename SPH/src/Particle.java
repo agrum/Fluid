@@ -1,5 +1,6 @@
 import java.nio.ByteBuffer;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Vector3f;
 
 public class Particle {
@@ -17,7 +18,7 @@ public class Particle {
 	
 	protected static final int MAX = 16*4;
 	
-	ByteBuffer m_information = ByteBuffer.allocate(MAX);
+	ByteBuffer m_information = BufferUtils.createByteBuffer(MAX);
 	
 	Particle ()
 	{
@@ -36,6 +37,17 @@ public class Particle {
 	public static int GLSLSize()
 	{
 		return 16 * (1 + (MAX - 1)/16);
+	}
+	
+	Vector3f getPosition()
+	{
+		Vector3f position = new Vector3f();
+		
+		position.setX(m_information.getFloat(POSITION_X));
+		position.setY(m_information.getFloat(POSITION_Y));
+		position.setZ(m_information.getFloat(POSITION_Z));
+		
+		return position;
 	}
 	
 	void setPosition(Vector3f p_position)

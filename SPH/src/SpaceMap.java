@@ -4,7 +4,7 @@ import java.util.Vector;
 public class SpaceMap {
 	private Cube m_front = new Cube();
 	private Cube m_back = new Cube();
-	private Vector<Particle> m_toAddParticleVector;
+	private Vector<Particle> m_toAddParticleVector = new Vector<Particle>();
 	
 	public void addParticle(Particle p_particle)
 	{
