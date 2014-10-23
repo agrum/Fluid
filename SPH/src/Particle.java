@@ -13,8 +13,10 @@ public class Particle {
 	protected static final int VELOCITY_Z = 6*4;
 	protected static final int VELOCITY_W = 7*4;
 	protected static final int MASS = 8*4;
-	protected static final int RADIUS = 9*4;
-	protected static final int NEXT = 10*4;
+	protected static final int AMASS = 9*4;
+	protected static final int DENSITY = 10*4;
+	protected static final int REZ = 11*4;
+	protected static final int NEXT = 12*4;
 	
 	protected static final int MAX = 16*4;
 	
@@ -24,8 +26,8 @@ public class Particle {
 	{
 		setPosition(new Vector3f(0,0,0));
 		setVelocity(new Vector3f(0,0,0));
-		setMass(1);
-		setRadius(0.5f);
+		setMass(1f);
+		setDensity(1f);
 		m_information.putInt(NEXT, 0xffffffff);
 	}
 	
@@ -71,8 +73,8 @@ public class Particle {
 		m_information.putFloat(MASS, p_mass);
 	}
 	
-	void setRadius(float p_radius)
+	void setDensity(float p_radius)
 	{
-		m_information.putFloat(RADIUS, p_radius);
+		m_information.putFloat(DENSITY, p_radius);
 	}
 }

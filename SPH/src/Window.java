@@ -87,8 +87,8 @@ public class Window {
 		m_eye.setFarVisibility(100.0f);
 		
 		m_eye.lookAt(
-				new Vector3f(0, 0, -60),
-				new Vector3f(0, 0, 0),
+				new Vector3f(16, 16, -30),
+				new Vector3f(16, 16, 16),
 				new Vector3f(0, 1, 0));
 	}
 	
@@ -119,10 +119,10 @@ public class Window {
 				break;
 			// Rotation
 			case Keyboard.KEY_UP:
-				m_eye.lookUp(rotationDelta);
+				m_eye.lookUp(-rotationDelta);
 				break;
 			case Keyboard.KEY_DOWN:
-				m_eye.lookUp(-rotationDelta);
+				m_eye.lookUp(rotationDelta);
 				break;
 			case Keyboard.KEY_LEFT:
 				m_eye.lookLeft(rotationDelta);

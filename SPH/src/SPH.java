@@ -6,23 +6,24 @@ import org.lwjgl.util.vector.Vector3f;
 public class SPH implements AbstractPass {
 	private Eye m_eye;
 	private SpaceMap m_spaceMap;
-	//private PassUpdate m_passUpdate;
+	private PassUpdate m_passUpdate;
 	private PassRender m_passRender;
 
 	private int m_viewportWidth;
 	private int m_viewportHeight;
-	//private long m_deltaT;
+	
+	private Timer m_timer = new Timer();
+	private long m_deltaT = 0;
 
 	@Override
 	public void initialize() {
 		m_eye = new Eye();
-		m_eye.move(16, 16, 16);
-		m_eye.lookLeft(-2);
-		m_eye.move(-40, 0, 0);
-		m_eye.setFarVisibility(1);
-		m_eye.setFarVisibility(40);
 		
 		m_spaceMap = new SpaceMap();
+
+		m_passUpdate = new PassUpdate();
+		m_passUpdate.initialize();
+		m_passUpdate.setSpaceMap(m_spaceMap);
 
 		m_passRender = new PassRender();
 		m_passRender.initialize();
@@ -30,18 +31,17 @@ public class SPH implements AbstractPass {
 		m_passRender.setSpaceMap(m_spaceMap);
 
 		Random rand = new Random();
-		for(int i = 0; i < 10; i++)
+		for(int i = 0; i < 1000; i++)
 		{
 			Particle particle = new Particle();
-			particle.setRadius(1);
-			particle.setMass(1); 
-			particle.setVelocity(new Vector3f(0, 0, 0));
-			
+
+			//Vector3f position = new Vector3f(16, 16, 16);
 			Vector3f position = new Vector3f(
-				(float) rand.nextInt(32) - 16f + (float) rand.nextInt(1000)/1000,
-				(float) rand.nextInt(32) - 16f + (float) rand.nextInt(1000)/1000,
-				(float) rand.nextInt(32) - 16f + (float) rand.nextInt(1000)/1000);
+					(float) rand.nextInt(32) + (float) rand.nextInt(1000)/1000,
+					(float) rand.nextInt(32) + (float) rand.nextInt(1000)/1000,
+					(float) rand.nextInt(32) + (float) rand.nextInt(1000)/1000);
 			particle.setPosition(position);
+			
 			addParticle(particle);
 		}
 		m_spaceMap.swap();
@@ -50,12 +50,16 @@ public class SPH implements AbstractPass {
 	@Override
 	public void render() 
 	{
-		Timer timer = new Timer();
-		timer.start();
-		
+		m_passUpdate.setDeltaT(m_deltaT);
+		m_passUpdate.render();
 		m_passRender.render();
 		
-		//m_deltaT = timer.elapsed();
+		m_spaceMap.swap();
+		
+		m_deltaT = m_timer.elapsed();
+		m_timer.start();
+		
+		System.out.println(m_deltaT / 1000000);
 	}
 	
 	public Eye eye() 

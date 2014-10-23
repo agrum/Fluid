@@ -53,5 +53,17 @@ void main()
 	gl_Position = uP * (uMV * Pos + vec4(-scale, -scale, 0.0, 1.0));
 	EmitVertex();
 
+	/*gl_Position = uP * vec4(1, 1, -30.0, 1.0);
+	EmitVertex(); 
+
+	gl_Position = uP * vec4(-1, 1, -30.0, 1.0);
+	EmitVertex(); 
+
+	gl_Position = uP * vec4(1, -1, -30.0, 1.0);
+	EmitVertex(); 
+
+	gl_Position = uP * vec4(-1, -1, -30.0, 1.0);
+	EmitVertex();*/
+
 	EndPrimitive(); 
 } 

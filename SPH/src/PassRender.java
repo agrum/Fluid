@@ -118,11 +118,6 @@ public class PassRender implements AbstractPass {
 
 		GL30.glBindVertexArray(m_vao.get(0));
 
-		Particle plop = front.particleAt(0);
-		Particle plip = front.particleAt(9);
-		Vector3f pos1 = plop.getPosition();
-		Vector3f pos2 = plip.getPosition();
-
 		GL20.glEnableVertexAttribArray(
 				GL20.glGetAttribLocation(m_program.id(), "aPosition"));
 		/*GL20.glEnableVertexAttribArray(

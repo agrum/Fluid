@@ -223,7 +223,7 @@ public class Eye {
 	{
 		m_position = position;
 		
-		Vector3f.sub(center, m_position, m_direction);
+		Vector3f.sub(center, position, m_direction);
 		m_direction.normalise();
 		
 		Vector3f.cross(m_direction, up, m_horizontal);
@@ -294,17 +294,17 @@ public class Eye {
 		m_vertical.normalise();
 		
 		m_viewMatrix.setIdentity();
-		m_viewMatrix.m00 = m_horizontal.x;
-		m_viewMatrix.m10 = m_horizontal.y;
-		m_viewMatrix.m20 = m_horizontal.z;
+		m_viewMatrix.m00 = -m_horizontal.x;
+		m_viewMatrix.m10 = -m_horizontal.y;
+		m_viewMatrix.m20 = -m_horizontal.z;
 		m_viewMatrix.m30 = Vector3f.dot(m_position, m_horizontal);
 		m_viewMatrix.m01 = m_vertical.x;
 		m_viewMatrix.m11 = m_vertical.y;
 		m_viewMatrix.m21 = m_vertical.z;
-		m_viewMatrix.m31 = Vector3f.dot(m_position, m_vertical);
-		m_viewMatrix.m02 = m_direction.x;
-		m_viewMatrix.m12 = m_direction.y;
-		m_viewMatrix.m22 = m_direction.z;
+		m_viewMatrix.m31 = -Vector3f.dot(m_position, m_vertical);
+		m_viewMatrix.m02 = -m_direction.x;
+		m_viewMatrix.m12 = -m_direction.y;
+		m_viewMatrix.m22 = -m_direction.z;
 		m_viewMatrix.m32 = Vector3f.dot(m_position, m_direction);
 	}
 }
