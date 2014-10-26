@@ -38,6 +38,12 @@ public class PassRender implements AbstractPass {
 	{
 		m_viewportWidth = p_width;
 		m_viewportHeight = p_height;
+		
+		m_eye.setAspectRatio(p_width / p_height);
+		m_eye.setFOVHorizontal((float) (180.0 / Math.PI * Math.sin(p_width / 1000.0)));
+		
+		m_program.setUniform("uWindowWidth", (float) p_width);
+		m_program.setUniform("uWindowHeight", (float) p_height);
 	}
 	
 	@Override
@@ -83,38 +89,15 @@ public class PassRender implements AbstractPass {
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		
-		float width  = (float) m_viewportWidth;
-		float height = (float) m_viewportHeight;
-		m_eye.setAspectRatio(width / height);
-		m_eye.setFOVHorizontal((float) (180.0 / Math.PI * Math.sin(width / 1000.0)));
+
+		Matrix4f viewProjMatrix = new Matrix4f();
+		Matrix4f.mul(m_eye.projMatrix(), m_eye.viewMatrix(), viewProjMatrix);
 
 		m_program.bind();
 
-		FloatBuffer matrix44Buffer = BufferUtils.createFloatBuffer(16);
-		Matrix4f viewProjMatrix = new Matrix4f();
-		Matrix4f.mul(m_eye.projMatrix(), m_eye.viewMatrix(), viewProjMatrix);
-		
-		m_eye.projMatrix().store(matrix44Buffer);  matrix44Buffer.flip();
-		GL20.glUniformMatrix4(
-				GL20.glGetUniformLocation(m_program.id(), "uP"),
-				false,
-				matrix44Buffer);
-		m_eye.viewMatrix().store(matrix44Buffer);  matrix44Buffer.flip();
-		GL20.glUniformMatrix4(
-				GL20.glGetUniformLocation(m_program.id(), "uMV"),
-				false,
-				matrix44Buffer);
-		viewProjMatrix.store(matrix44Buffer);  matrix44Buffer.flip();
-		GL20.glUniformMatrix4(
-				GL20.glGetUniformLocation(m_program.id(), "uMVP"),
-				false,
-				matrix44Buffer);
-		GL20.glUniform1f(
-				GL20.glGetUniformLocation(m_program.id(), "uWindowWidth"),
-				(float) width);
-		GL20.glUniform1f(
-				GL20.glGetUniformLocation(m_program.id(), "uWindowHeight"),
-				(float) height);
+		m_program.setUniform("uP", m_eye.projMatrix());
+		m_program.setUniform("uMV", m_eye.viewMatrix());
+		m_program.setUniform("uMVP", viewProjMatrix);
 
 		GL30.glBindVertexArray(m_vao.get(0));
 
