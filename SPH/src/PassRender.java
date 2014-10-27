@@ -13,7 +13,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 
 public class PassRender implements AbstractPass {
-	private ShaderProgram m_program;
+	private RenderProgram m_program;
 	private IntBuffer m_vao = BufferUtils.createIntBuffer(1);
 	private IntBuffer m_ibo = BufferUtils.createIntBuffer(1);
 	
@@ -49,11 +49,13 @@ public class PassRender implements AbstractPass {
 	@Override
 	public void initialize() {
 		//Init shader program
-		m_program = new ShaderProgram();
-		m_program.addShaderFromFile(ShaderProgram.ShaderType.Vertex, "resource/billboard.vert");
-		m_program.addShaderFromFile(ShaderProgram.ShaderType.Geometry, "resource/billboard.geom");
-		m_program.addShaderFromFile(ShaderProgram.ShaderType.Fragment, "resource/billboard.frag");
-		m_program.link();
+		m_program = new RenderProgram(
+				"resource/billboard.vert",
+				"resource/billboard.geom",
+				"resource/billboard.frag");
+		m_program.addVertexAttribArray("aPosition");
+		m_program.addVertexAttribArray("aVelocity");
+		m_program.addVertexAttribArray("aDensity");
 
 		//Indice buffer
 		int maxIndices = 100000;
@@ -88,60 +90,33 @@ public class PassRender implements AbstractPass {
 		GL11.glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		
 
 		Matrix4f viewProjMatrix = new Matrix4f();
 		Matrix4f.mul(m_eye.projMatrix(), m_eye.viewMatrix(), viewProjMatrix);
 
-		m_program.bind();
+		m_program.bind(m_vao.get(0));
 
 		m_program.setUniform("uP", m_eye.projMatrix());
 		m_program.setUniform("uMV", m_eye.viewMatrix());
 		m_program.setUniform("uMVP", viewProjMatrix);
 
-		GL30.glBindVertexArray(m_vao.get(0));
-
-		GL20.glEnableVertexAttribArray(
-				GL20.glGetAttribLocation(m_program.id(), "aPosition"));
-		/*GL20.glEnableVertexAttribArray(
-				GL20.glGetAttribLocation(m_program.id(), "aVelocity"));*/
-		GL20.glEnableVertexAttribArray(
-				GL20.glGetAttribLocation(m_program.id(), "aDensity"));
-
-		exitOnGLError("0");
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, m_ibo.get(0));
 		front.bindParticleArray(
 			m_program,
 			"aPosition",
 			"aVelocity",
 			"aDensity");
-		exitOnGLError("2");
 		GL11.glDrawElements(
 				GL11.GL_POINTS, 
 				front.amountParticles(), 
 				GL11.GL_UNSIGNED_INT, 
 				0);
 
-		exitOnGLError("1");
-		GL20.glDisableVertexAttribArray(
-				GL20.glGetAttribLocation(m_program.id(), "aPosition"));
-		/*GL20.glDisableVertexAttribArray(
-				GL20.glGetAttribLocation(m_program.id(), "aVelocity"));*/
-		GL20.glDisableVertexAttribArray(
-				GL20.glGetAttribLocation(m_program.id(), "aDensity"));
-		exitOnGLError("3");
-
-		GL15.glBindBuffer(
-				GL15.GL_ARRAY_BUFFER, 
-				0);
 		GL15.glBindBuffer(
 				GL15.GL_ELEMENT_ARRAY_BUFFER, 
 				0);
-		
-		GL30.glBindVertexArray(0);
 
 		m_program.release();
-		exitOnGLError("4");
 	}
 
 	private void exitOnGLError(String errorMessage) {

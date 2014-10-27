@@ -75,7 +75,7 @@ public class Window {
 		m_sph.initialize();
 		m_sph.setViewportSize(WIDTH, HEIGHT);
 		
-		this.exitOnGLError("setupQuad");
+		this.exitOnGLError("setupSPH");
 	}
 
 	private void setupMatrices() {

@@ -21,8 +21,8 @@ import org.lwjgl.util.vector.Matrix4f;
 
 public class ShaderProgram {
 	// Shader variables
-	private int m_id = 0;
-	private boolean m_bound = false;
+	protected int m_id = 0;
+	protected boolean m_bound = false;
 	private Map<Integer, Map.Entry<Integer, IntBuffer>> m_pendingUniformI = new TreeMap<Integer, Map.Entry<Integer, IntBuffer>>();
 	private Map<Integer, Map.Entry<Integer, FloatBuffer>> m_pendingUniformF = new TreeMap<Integer, Map.Entry<Integer, FloatBuffer>>();
 	private Map<Integer, Map.Entry<Integer, FloatBuffer>> m_pendingUniformM = new TreeMap<Integer, Map.Entry<Integer, FloatBuffer>>();
@@ -40,7 +40,7 @@ public class ShaderProgram {
 		}
 	}
 	
-	public ShaderProgram() {
+	protected ShaderProgram() {
 		m_id = GL20.glCreateProgram();
 	}
 	
@@ -71,37 +71,7 @@ public class ShaderProgram {
 		GL20.glUseProgram(m_id);
 		m_bound = true;
 		
-		for (Map.Entry<Integer, Map.Entry<Integer, IntBuffer>> entry : m_pendingUniformI.entrySet())
-		{
-			switch(entry.getValue().getKey()){
-			case 1 : GL20.glUniform1(entry.getKey(), entry.getValue().getValue()); break;
-			case 2 : GL20.glUniform2(entry.getKey(), entry.getValue().getValue()); break;
-			case 3 : GL20.glUniform3(entry.getKey(), entry.getValue().getValue()); break;
-			case 4 : GL20.glUniform4(entry.getKey(), entry.getValue().getValue()); break;
-			}
-		}
-		m_pendingUniformI.clear();
-		
-		for (Map.Entry<Integer, Map.Entry<Integer, FloatBuffer>> entry : m_pendingUniformF.entrySet())
-		{
-			switch(entry.getValue().getKey()){
-			case 1 : GL20.glUniform1(entry.getKey(), entry.getValue().getValue()); break;
-			case 2 : GL20.glUniform2(entry.getKey(), entry.getValue().getValue()); break;
-			case 3 : GL20.glUniform3(entry.getKey(), entry.getValue().getValue()); break;
-			case 4 : GL20.glUniform4(entry.getKey(), entry.getValue().getValue()); break;
-			}
-		}
-		m_pendingUniformI.clear();
-		
-		for (Map.Entry<Integer, Map.Entry<Integer, FloatBuffer>> entry : m_pendingUniformM.entrySet())
-		{
-			switch(entry.getValue().getKey()){
-			case 2 : GL20.glUniformMatrix2(entry.getKey(), false, entry.getValue().getValue()); break;
-			case 3 : GL20.glUniformMatrix3(entry.getKey(), false, entry.getValue().getValue()); break;
-			case 4 : GL20.glUniformMatrix4(entry.getKey(), false, entry.getValue().getValue()); break;
-			}
-		}
-		m_pendingUniformI.clear();
+		setPendingUniforms();
 	}
 	
 	public void release() {
@@ -333,7 +303,42 @@ public class ShaderProgram {
 		return shaderID;
 	}
 	
-	private void exitOnGLError(String errorMessage) {
+	protected void setPendingUniforms()
+	{
+		for (Map.Entry<Integer, Map.Entry<Integer, IntBuffer>> entry : m_pendingUniformI.entrySet())
+		{
+			switch(entry.getValue().getKey()){
+			case 1 : GL20.glUniform1(entry.getKey(), entry.getValue().getValue()); break;
+			case 2 : GL20.glUniform2(entry.getKey(), entry.getValue().getValue()); break;
+			case 3 : GL20.glUniform3(entry.getKey(), entry.getValue().getValue()); break;
+			case 4 : GL20.glUniform4(entry.getKey(), entry.getValue().getValue()); break;
+			}
+		}
+		m_pendingUniformI.clear();
+		
+		for (Map.Entry<Integer, Map.Entry<Integer, FloatBuffer>> entry : m_pendingUniformF.entrySet())
+		{
+			switch(entry.getValue().getKey()){
+			case 1 : GL20.glUniform1(entry.getKey(), entry.getValue().getValue()); break;
+			case 2 : GL20.glUniform2(entry.getKey(), entry.getValue().getValue()); break;
+			case 3 : GL20.glUniform3(entry.getKey(), entry.getValue().getValue()); break;
+			case 4 : GL20.glUniform4(entry.getKey(), entry.getValue().getValue()); break;
+			}
+		}
+		m_pendingUniformI.clear();
+		
+		for (Map.Entry<Integer, Map.Entry<Integer, FloatBuffer>> entry : m_pendingUniformM.entrySet())
+		{
+			switch(entry.getValue().getKey()){
+			case 2 : GL20.glUniformMatrix2(entry.getKey(), false, entry.getValue().getValue()); break;
+			case 3 : GL20.glUniformMatrix3(entry.getKey(), false, entry.getValue().getValue()); break;
+			case 4 : GL20.glUniformMatrix4(entry.getKey(), false, entry.getValue().getValue()); break;
+			}
+		}
+		m_pendingUniformI.clear();
+	}
+	
+	protected void exitOnGLError(String errorMessage) {
 		int errorValue = GL11.glGetError();
 		
 		if (errorValue != GL11.GL_NO_ERROR) {
