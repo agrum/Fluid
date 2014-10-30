@@ -1,5 +1,3 @@
-import java.nio.IntBuffer;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -57,5 +55,21 @@ public class RenderProgram extends ShaderProgram {
 		
 		if(loc != -1 && !m_attribMap.contains(loc))
 			m_attribMap.add(loc);
+	}
+
+	public void setAttributeBuffer(
+			String p_name,
+			int p_type,
+			int p_offset,
+			int p_tupleSize,
+			int p_stride)
+	{
+		GL20.glVertexAttribPointer(
+				GL20.glGetAttribLocation(m_id, p_name),
+				p_tupleSize,
+				p_type,
+				true,
+				p_stride,
+				p_offset);
 	}
 }

@@ -1,10 +1,9 @@
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
 
 
 public class PassUpdate implements AbstractPass {
-	private ShaderProgram m_program = null;
+	private ComputeProgram m_program = null;
 	private int m_exploreLimit = 5;
 
 	private SpaceMap m_spaceMap = null;
@@ -23,9 +22,7 @@ public class PassUpdate implements AbstractPass {
 	@Override
 	public void initialize() {
 		//Init shader program
-		m_program = new ShaderProgram();
-		m_program.addShaderFromFile(ShaderProgram.ShaderType.Compute, "resource/sphUpdateEasy.comp");
-		m_program.link();
+		m_program = new ComputeProgram("resource/sphUpdateEasy.comp");
 
 		m_exploreLimit = 15;
 	}
@@ -41,13 +38,9 @@ public class PassUpdate implements AbstractPass {
 			m_exploreLimit++;
 		
 		m_program.bind();
-		
-		GL20.glUniform1f(
-				GL20.glGetUniformLocation(m_program.id(), "uDeltaT"),
-				m_deltaT);
-		GL20.glUniform1i(
-				GL20.glGetUniformLocation(m_program.id(), "uExploreLimit"),
-				m_exploreLimit);
+
+		m_program.setUniform("uDeltaT", m_deltaT);
+		m_program.setUniform("uExploreLimit", m_exploreLimit);
 			
 		//Bind
 		front.bind(0);

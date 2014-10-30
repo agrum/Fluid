@@ -83,7 +83,7 @@ public class Cube {
 	}
 	
 	public void bindParticleArray(
-			ShaderProgram p_program,
+			RenderProgram p_program,
 			String p_attribPositionName,
 			String p_attribVelocityName,
 			String p_attribDensityName)
@@ -168,8 +168,6 @@ public class Cube {
 		if(!s_clearBufferSet)
 		{
 			Byte xff = Byte.decode("-0x01");
-			Byte x00 = Byte.decode("0x00");
-			Byte x01 = Byte.decode("0x01");
 			ByteBuffer clearData = BufferUtils.createByteBuffer(s_offsetToParticles);
 			for(int i = 0 ; i < s_offsetToParticles; i++)
 				clearData.put(i, xff);

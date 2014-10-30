@@ -1,6 +1,3 @@
-import java.nio.FloatBuffer;
-
-import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.*;
  
 
