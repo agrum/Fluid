@@ -10,18 +10,7 @@ struct Particle
 	float antiMass;
 	float density;
 	int rez;
-	int notUsedA;
-	int notUsedB;
-	int notUsedC;
 	uint next;
-};
-
-struct PointerListElement
-{
-	uint ptr;
-	uint next;
-	uint notUsedA;
-	uint notUsedY;
 };
 
 uniform int uExploreLimit;
@@ -33,9 +22,7 @@ coherent layout (binding = 0, std430) buffer iPCSStruct
 	layout(offset = 131072) uint headerMat_Size_2[16*16*16];
 	layout(offset = 147456) uint offChart; //131072
 	layout(offset = 147460) uint nbParticles; //131076
-	layout(offset = 147464) uint notUsedWorkGroupIDY;
-	layout(offset = 147468) uint notUsedWorkGroupIDZ;
-	layout(offset = 147472) PointerListElement particlePtrList[]; //131088
+	layout(offset = 147472) Particle particle[]; //131088
 } iPCS;
 
 coherent layout (binding = 1, std430) buffer oPCSStruct
@@ -43,23 +30,14 @@ coherent layout (binding = 1, std430) buffer oPCSStruct
 	layout(offset = 0) uint headerMat_Size_1[32*32*32];
 	layout(offset = 131072) uint headerMat_Size_2[16*16*16];
 	layout(offset = 147456) uint offChart;
-	layout(offset = 147460) uint nbParticles; //131076
-	layout(offset = 147464) uint notUsedWorkGroupIDY;
-	layout(offset = 147468) uint notUsedWorkGroupIDZ;
-	layout(offset = 147472) PointerListElement particlePtrList[];
+	layout(offset = 147460) uint nbParticles;
+	layout(offset = 147472) Particle particle[];
 } oPCS;
-
-coherent layout (binding = 2, std430) buffer particleSetStruct
-{
-	layout(offset = 0) Particle particle[];
-} particleSet;
 
 void main() 
 {
 	//Read input particle
-	uint particlePtr = iPCS.particlePtrList[gl_WorkGroupID.x].ptr;
-	Particle particle = particleSet.particle[particlePtr];
-	
+	Particle particle = iPCS.particle[gl_WorkGroupID.x];
 	uint iHeaderMatrix[5][];
 	iHeaderMatrix[0] = iPCS.headerMat_Size_1;
 	iHeaderMatrix[1] = iPCS.headerMat_Size_2;
@@ -101,12 +79,11 @@ void main()
 					ivec3 currentVoxel = particleVoxel + offset;
 					if(clamp(currentVoxel, ivec3(0, 0, 0), topClamp) == currentVoxel){
 						uint voxelIndex = currentVoxel.x + currentVoxel.y * 32 + currentVoxel.z*32*32;
-						uint listIndex = iHeaderMatrix[rez][voxelIndex];
+						uint particleIndex = iHeaderMatrix[rez][voxelIndex];
 						int explored = 0;
-						while(listIndex != 0xffffffff) // && explored++ < uExploreLimit)
+						while(particleIndex != 0xffffffff /*&& explored++ < uExploreLimit*/)
 						{
-							PointerListElement PLE = iPCS.particlePtrList[listIndex];
-							Particle surrParticle = particleSet.particle[PLE.ptr];
+							Particle surrParticle = iPCS.particle[particleIndex];
 							vec3 diff = (particle.position.xyz - surrParticle.position.xyz.xyz);
 							float sqDist = dot(diff, diff);
 							if(sqDist > 0.0001 && sqDist < 1.0){
@@ -127,7 +104,7 @@ void main()
 								V += (surrParticle.velocity.xyz - particle.velocity.xyz)*surrParticle.mass*tmpCoefV/p_density;
 							}
 
-							listIndex = PLE.next;
+							particleIndex = surrParticle.next;
 						}
 					}
 				}
@@ -159,11 +136,7 @@ void main()
 		next = atomicExchange(oPCS.headerMat_Size_1[headerMatIndex], oID);
 	}
 	else
-		//next = atomicExchange(oPCS.offChart, oID);
-		next = 0xffffffff;
-	
-	particleSet.particle[particlePtr] = particle;
-	oPCS.particlePtrList[oID].ptr = particlePtr;
-	oPCS.particlePtrList[oID].next = next;
+		next = atomicExchange(oPCS.offChart, oID);
+	particle.next = next;
+	oPCS.particle[oID] = particle;
 }
-

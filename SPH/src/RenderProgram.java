@@ -26,7 +26,6 @@ public class RenderProgram extends ShaderProgram {
 	
 	public void bind(int p_vao)
 	{
-		exitOnGLError("0");
 		GL30.glBindVertexArray(p_vao);
 		exitOnGLError("1");
 		GL20.glUseProgram(m_id);

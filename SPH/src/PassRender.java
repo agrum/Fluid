@@ -13,9 +13,8 @@ public class PassRender implements AbstractPass {
 	private RenderProgram m_program;
 	private IntBuffer m_vao = BufferUtils.createIntBuffer(1);
 	private IntBuffer m_ibo = BufferUtils.createIntBuffer(1);
-
+	
 	private SpaceMap m_spaceMap = null;
-	private ParticleSet m_particleSet = null;
 	private Eye m_eye = null;
 	private int m_viewportWidth = 0;
 	private int m_viewportHeight = 0;
@@ -23,11 +22,6 @@ public class PassRender implements AbstractPass {
 	public void setSpaceMap(SpaceMap p_spaceMap)
 	{
 		m_spaceMap = p_spaceMap;
-	}
-	
-	public void setParticleSet(ParticleSet p_particleSet)
-	{
-		m_particleSet = p_particleSet;
 	}
 	
 	public void setEye(Eye p_eye)
@@ -84,7 +78,6 @@ public class PassRender implements AbstractPass {
 
 	@Override
 	public void render() {
-		exitOnGLError("PassRender::render()");
 		Cube front = m_spaceMap.front();
 		
 		// Set the display viewport
@@ -105,7 +98,7 @@ public class PassRender implements AbstractPass {
 		m_program.setUniform("uMVP", viewProjMatrix);
 
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, m_ibo.get(0));
-		m_particleSet.bindParticleArray(
+		front.bindParticleArray(
 			m_program,
 			"aPosition",
 			"aVelocity",

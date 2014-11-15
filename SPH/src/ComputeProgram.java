@@ -14,13 +14,10 @@ public class ComputeProgram extends ShaderProgram{
 	}
 	
 	public void bind() {
-		exitOnGLError("ComputeProgram::bind()_0");
 		GL20.glUseProgram(m_id);
-		exitOnGLError("ComputeProgram::bind()_1");
 		m_bound = true;
 		
 		setPendingUniforms();
-		exitOnGLError("ComputeProgram::bind()_2");
 	}
 	
 	public void release() {

@@ -16,7 +16,7 @@ public class Particle {
 	protected static final int AMASS = 9*4;
 	protected static final int DENSITY = 10*4;
 	protected static final int REZ = 11*4;
-	protected static final int NEXT = 15*4;
+	protected static final int NEXT = 12*4;
 	
 	protected static final int MAX = 16*4;
 	

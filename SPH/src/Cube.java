@@ -1,7 +1,9 @@
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Vector;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
@@ -12,7 +14,6 @@ public class Cube {
 	private static final int s_cubeSize = 32;
 	private static final int s_offsetToCounter = 147460;
 	private static final int s_offsetToParticles = 147472;
-	private static final int s_bufferSize = s_offsetToParticles + s_cubeSize*s_cubeSize*s_cubeSize*Particle.GLSLSize();
 	private static IntBuffer s_clearBuffer = BufferUtils.createIntBuffer(1);
 	private static boolean s_clearBufferSet = false;
 	
@@ -20,6 +21,10 @@ public class Cube {
 	
 	Cube()
 	{
+		int cubeVolume = s_cubeSize*s_cubeSize*s_cubeSize;
+		int nbParticleSupported = cubeVolume;
+		int linkedListSize = nbParticleSupported * Particle.GLSLSize();
+		
 		GL15.glGenBuffers(m_buffer);
 		GL30.glBindBufferBase(
 				GL43.GL_SHADER_STORAGE_BUFFER, 
@@ -27,7 +32,7 @@ public class Cube {
 				m_buffer.get(0));
 		GL15.glBufferData(
 				GL43.GL_SHADER_STORAGE_BUFFER, 
-				s_bufferSize, 
+				s_offsetToParticles + linkedListSize, 
 				GL15.GL_DYNAMIC_DRAW);
 		GL30.glBindBufferBase(
 				GL43.GL_SHADER_STORAGE_BUFFER, 
@@ -43,7 +48,7 @@ public class Cube {
 	
 	public int amountParticles()
 	{
-		IntBuffer amount = BufferUtils.createIntBuffer(3);
+		IntBuffer amount = BufferUtils.createIntBuffer(1);
 		
 		GL15.glBindBuffer(
 				GL15.GL_ARRAY_BUFFER, 
@@ -55,30 +60,56 @@ public class Cube {
 		GL15.glBindBuffer(
 				GL15.GL_ARRAY_BUFFER, 
 				0);
-		
-		/*//Check all invocation group values
-		int x = amount.get(0);
-		int y = amount.get(1);
-		int z = amount.get(2);*/
+
 		return amount.get(0);
 	}
 	
-	public int particleIndexAt(int p_index)
+	public Particle particleAt(int p_index)
 	{
-		IntBuffer particleIndex = BufferUtils.createIntBuffer(1);
+		Particle particle = new Particle();
 		
 		GL15.glBindBuffer(
 				GL15.GL_ARRAY_BUFFER,
 				m_buffer.get(0));
 		GL15.glGetBufferSubData(
 				GL15.GL_ARRAY_BUFFER, 
-				s_offsetToParticles + p_index*4, 
-				particleIndex);
+				s_offsetToParticles + Particle.GLSLSize() * p_index, 
+				particle.buffer());
 		GL15.glBindBuffer(
 				GL15.GL_ARRAY_BUFFER, 
 				0);
 		
-		return particleIndex.get(0);
+		return particle;
+	}
+	
+	public void bindParticleArray(
+			RenderProgram p_program,
+			String p_attribPositionName,
+			String p_attribVelocityName,
+			String p_attribDensityName)
+	{
+		GL15.glBindBuffer(
+				GL15.GL_ARRAY_BUFFER,
+				m_buffer.get(0));
+		
+		p_program.setAttributeBuffer(
+				p_attribPositionName,
+				GL11.GL_FLOAT, 
+				s_offsetToParticles + 0*4, 
+				3, 
+				Particle.GLSLSize());
+		/*p_program.setAttributeBuffer(
+				p_attribVelocityName,
+				GL11.GL_FLOAT, 
+				s_offsetToParticles + 4*4, 
+				3, 
+				Particle.GLSLSize());*/
+		p_program.setAttributeBuffer(
+				p_attribDensityName,
+				GL11.GL_FLOAT, 
+				s_offsetToParticles + 10*4, 
+				1, 
+				Particle.GLSLSize());
 	}
 	
 	public void bind(int p_layout)
@@ -106,27 +137,22 @@ public class Cube {
 				0);
 	}
 	
-	public void addParticleIndexes(IntBuffer p_particleIndexBuffer)
+	public void addParticles(Vector<Particle> p_particleVector)
 	{
-		IntBuffer particleListBuffer = BufferUtils.createIntBuffer(p_particleIndexBuffer.limit()*4);
 		IntBuffer amount = BufferUtils.createIntBuffer(1);
-		
-		for(int i = 0; i < p_particleIndexBuffer.limit(); i++){
-			particleListBuffer.put(p_particleIndexBuffer.get());
-			particleListBuffer.put(-1);
-			particleListBuffer.put(-1);
-			particleListBuffer.put(-1);
-		}
-		particleListBuffer.flip();
 
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, m_buffer.get(0));
 		GL15.glGetBufferSubData(GL15.GL_ARRAY_BUFFER, s_offsetToCounter, amount);
 		
-		GL15.glBufferSubData(
-				GL15.GL_ARRAY_BUFFER, 
-				s_offsetToParticles + amount.get(0) * 16, 
-				particleListBuffer);
-		amount.put(0, amount.get(0) + p_particleIndexBuffer.limit());
+		for(int i = 0; i < p_particleVector.size(); i++)
+		{
+			ByteBuffer buffer = p_particleVector.get(i).buffer();
+			GL15.glBufferSubData(
+					GL15.GL_ARRAY_BUFFER, 
+					s_offsetToParticles + amount.get(0) * Particle.GLSLSize(), 
+					buffer);
+			amount.put(0, amount.get(0) + 1);
+		}
 		
 		GL15.glBufferSubData(
 				GL15.GL_ARRAY_BUFFER, 
@@ -142,13 +168,13 @@ public class Cube {
 		if(!s_clearBufferSet)
 		{
 			Byte xff = Byte.decode("-0x01");
-			ByteBuffer clearData = BufferUtils.createByteBuffer(s_bufferSize);
-			for(int i = 0 ; i < s_bufferSize; i++)
+			ByteBuffer clearData = BufferUtils.createByteBuffer(s_offsetToParticles);
+			for(int i = 0 ; i < s_offsetToParticles; i++)
 				clearData.put(i, xff);
 
 			clearData.putInt(s_offsetToCounter + 0, 0); //Actual amount of particle
-			clearData.putInt(s_offsetToCounter + 4, 1); //Work group Y amount of invocations
-			clearData.putInt(s_offsetToCounter + 8, 1); //Work group Z amount of invocations
+			clearData.putInt(s_offsetToCounter + 4, 1); //Actual amount of particle
+			clearData.putInt(s_offsetToCounter + 8, 1); //Actual amount of particle
 			
 			GL15.glGenBuffers(s_clearBuffer);
 			GL15.glBindBuffer(
@@ -174,7 +200,7 @@ public class Cube {
 				GL15.GL_ARRAY_BUFFER,
 				0,
 				0,
-				s_bufferSize);
+				s_offsetToParticles);
 		GL15.glBindBuffer(
 				GL21.GL_PIXEL_UNPACK_BUFFER, 
 				0);
