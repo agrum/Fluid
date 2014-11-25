@@ -1,3 +1,4 @@
+package Default;
 
 public class Timer {
 	private boolean m_on = false;

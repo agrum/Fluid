@@ -1,3 +1,4 @@
+package Default;
 import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
 

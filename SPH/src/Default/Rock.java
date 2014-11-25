@@ -1,3 +1,4 @@
+package Default;
 
 public class Rock extends Exception {
 	static final long serialVersionUID = 0x73302;
