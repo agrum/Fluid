@@ -310,7 +310,7 @@ public class ShaderProgram {
 		GL20.glCompileShader(shaderID);
 		
 		if (GL20.glGetShaderi(shaderID, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-			System.err.println("Could not compile shader.");
+			System.err.println("Could not compile shader\n" + GL20.glGetShaderInfoLog(shaderID, 1000));
 			System.exit(-1);
 		}
 		

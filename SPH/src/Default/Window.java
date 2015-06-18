@@ -13,10 +13,92 @@ import org.lwjgl.util.vector.Vector3f;
 public class Window {
 	// Entry point for the application
 	public static void main(String[] args) {
-		new Window();
+		Window window = new Window();
+		window.create();
+		
+		SPH sph = new SPH();
+		sph.initialize();
+		sph.setViewportSize(1000, 600);
+		
+		window.exitOnGLError("setupSPH");
+		
+		Eye eye = sph.eye();
+		
+		eye.setFOVVertical(60.0f);
+		eye.setAspectRatio((float)1000 / (float)600);
+		eye.setNearVisibility(0.1f);
+		eye.setFarVisibility(100.0f);
+		
+		eye.lookAt(
+				new Vector3f(16, 16, -30),
+				new Vector3f(16, 16, 16),
+				new Vector3f(0, 1, 0));
+		
+		window.exitOnGLError("setupEye");
+		
+		window.exec(sph);
 	}
 	
-	// Setup variables
+	private String m_windowTitle = "noTitle";
+	private int m_width = 1000;
+	private int m_height = 600;
+	private int m_frequency = 60;
+	
+	private boolean m_compatibilityMode = true;
+	private boolean m_coreProfile = true;
+	
+	private int m_major = 4;
+	private int m_minor = 3;
+	
+	public Window()
+	{
+		
+	}
+	
+	public void create()
+	{
+		try {
+			PixelFormat pixelFormat = new PixelFormat();
+			ContextAttribs contextAtrributes = new ContextAttribs(m_major, m_minor)
+				.withForwardCompatible(m_compatibilityMode)
+				.withProfileCore(m_coreProfile);
+			
+			Display.setDisplayMode(new DisplayMode(m_width, m_height));
+			Display.setTitle(m_windowTitle);
+			Display.create(pixelFormat, contextAtrributes);
+			
+			GL11.glViewport(0, 0, m_width, m_height);
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
+	
+	public void exec(AbstractPass p_pass)
+	{
+		while (!Display.isCloseRequested()) 
+		{
+			try 
+			{
+				p_pass.render();
+			} 
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			
+			// Force a maximum FPS of about 60
+			Display.sync(m_frequency);
+			// Let the CPU synchronize with the GPU if GPU is tagging behind
+			Display.update();
+		}
+		
+		Display.destroy();
+	}
+	
+	/*// Setup variables
 	private final String WINDOW_TITLE = "SPH";
 	private final int WIDTH = 1000;
 	private final int HEIGHT = 600;
@@ -159,7 +241,7 @@ public class Window {
 		this.exitOnGLError("destroyOpenGL");
 		
 		Display.destroy();
-	}
+	}*/
 	
 	private void exitOnGLError(String errorMessage) {
 		int errorValue = GL11.glGetError();
