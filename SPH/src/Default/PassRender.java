@@ -9,6 +9,10 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Matrix4f;
 
+import lemon.camera.Eye;
+import lemon.pass.AbstractPass;
+import lemon.program.RenderProgram;
+
 
 public class PassRender implements AbstractPass {
 	private RenderProgram m_program;
@@ -52,7 +56,7 @@ public class PassRender implements AbstractPass {
 				"resource/billboard.geom",
 				"resource/billboard.frag");
 		m_program.addVertexAttribArray("aPosition");
-		m_program.addVertexAttribArray("aVelocity");
+		//m_program.addVertexAttribArray("aVelocity");
 		m_program.addVertexAttribArray("aDensity");
 
 		//Indice buffer

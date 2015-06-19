@@ -4,12 +4,12 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import lemon.program.ShaderProgram;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL42;
-
-import Default.ShaderProgram;
 
 public class Texture1DArray extends Texture {
 	private Sampler m_sampler = null;

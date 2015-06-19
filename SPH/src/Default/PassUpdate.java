@@ -1,4 +1,7 @@
 package Default;
+import lemon.pass.AbstractPass;
+import lemon.program.ComputeProgram;
+
 import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
 

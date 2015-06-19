@@ -1,13 +1,14 @@
-package Default;
+package SPH.pass;
+
 import java.util.Random;
 
 import org.lwjgl.util.vector.Vector3f;
-
-import lemon.camera.Eye;
 import lemon.pass.AbstractPass;
+import lemon.camera.Eye;
+import Default.*;
 
 
-public class SPH implements AbstractPass {
+public class SPHPass implements AbstractPass {
 	private Eye m_eye;
 	private SpaceMap m_spaceMap;
 	private PassUpdate m_passUpdate;

@@ -23,7 +23,7 @@ public class Particle {
 	
 	ByteBuffer m_information = BufferUtils.createByteBuffer(MAX);
 	
-	Particle ()
+	public Particle ()
 	{
 		setPosition(new Vector3f(0,0,0));
 		setVelocity(new Vector3f(0,0,0));
@@ -33,7 +33,7 @@ public class Particle {
 		m_information.putInt(NEXT, 0xffffffff);
 	}
 	
-	ByteBuffer buffer()
+	public ByteBuffer buffer()
 	{
 		return m_information;
 	}
@@ -43,7 +43,7 @@ public class Particle {
 		return 16 * (1 + (MAX - 1)/16);
 	}
 	
-	Vector3f getPosition()
+	public Vector3f getPosition()
 	{
 		Vector3f position = new Vector3f();
 		
@@ -54,7 +54,7 @@ public class Particle {
 		return position;
 	}
 	
-	void setPosition(Vector3f p_position)
+	public void setPosition(Vector3f p_position)
 	{
 		m_information.putFloat(POSITION_X, p_position.getX());
 		m_information.putFloat(POSITION_Y, p_position.getY());
@@ -62,7 +62,7 @@ public class Particle {
 		m_information.putFloat(POSITION_W, 1.0f);
 	}
 	
-	void setVelocity(Vector3f p_velocity)
+	public void setVelocity(Vector3f p_velocity)
 	{
 		m_information.putFloat(VELOCITY_X, p_velocity.getX());
 		m_information.putFloat(VELOCITY_Y, p_velocity.getY());
@@ -70,17 +70,17 @@ public class Particle {
 		m_information.putFloat(VELOCITY_W, 1.0f);
 	}
 	
-	void setMass(float p_mass)
+	public void setMass(float p_mass)
 	{
 		m_information.putFloat(MASS, p_mass);
 	}
 	
-	void setRadius(float p_radius)
+	public void setRadius(float p_radius)
 	{
 		m_information.putFloat(RADIUS, p_radius);
 	}
 	
-	void setDensity(float p_density)
+	public void setDensity(float p_density)
 	{
 		m_information.putFloat(DENSITY, p_density);
 	}

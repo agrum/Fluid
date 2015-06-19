@@ -4,9 +4,9 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import org.lwjgl.opengl.GL11;
+import lemon.program.ShaderProgram;
 
-import Default.ShaderProgram;
+import org.lwjgl.opengl.GL11;
 
 public abstract class Texture {
 	protected String m_name;
