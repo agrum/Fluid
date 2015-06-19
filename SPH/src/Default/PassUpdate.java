@@ -52,7 +52,8 @@ public class PassUpdate implements AbstractPass {
 		back.bind(1);
 		
 		//Dispatch
-		GL43.glDispatchComputeIndirect(offset);
+		//GL43.glDispatchComputeIndirect(offset);
+		GL43.glDispatchCompute(1024, 1, 1);
 
 		//Barrier
 		GL42.glMemoryBarrier(GL42.GL_ALL_BARRIER_BITS);

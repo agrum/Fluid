@@ -33,7 +33,7 @@ public class SPH {
 		eye.setFarVisibility(100.0f);
 		
 		eye.lookAt(
-				new Vector3f(16, 16, -30),
+				new Vector3f(16, 16, -50),
 				new Vector3f(16, 16, 16),
 				new Vector3f(0, 1, 0));
 	}

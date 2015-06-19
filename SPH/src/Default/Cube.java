@@ -190,6 +190,8 @@ public class Cube {
 			GL15.glBindBuffer(
 					GL21.GL_PIXEL_UNPACK_BUFFER, 
 					0);
+			
+			s_clearBufferSet = true;
 		}
 		
 		GL15.glBindBuffer(

@@ -36,7 +36,7 @@ public class SPHPass implements AbstractPass {
 		m_passRender.setSpaceMap(m_spaceMap);
 
 		Random rand = new Random();
-		for(int i = 0; i < 4000; i++)
+		for(int i = 0; i < 32768; i++)
 		{
 			Particle particle = new Particle();
 
